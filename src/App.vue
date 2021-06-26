@@ -4,13 +4,36 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, toRefs, PropType } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
+
+type HelloWorldType = typeof HelloWorld
+type propsNow = HelloWorldType['props']
+
+type Props<T> = { [K in keyof T]: { type: PropType<T[K]> } }
+
+// Hack. But there is not default or required
+type actualProps = Props<Parameters<NonNullable<HelloWorldType['setup']>>[0]>
 
 export default defineComponent({
   name: 'App',
   components: {
     HelloWorld
+  },
+  props: {
+    // Try to remove `as actualProps`. Props will be type of `any`
+    ...HelloWorld.props as actualProps,
+    test: String
+  },
+  setup (props) {
+    const HelloWorldProps = toRefs(props)
+
+    console.log(HelloWorldProps.moreProps) // Date[] | undefined  // OK
+    console.log(HelloWorldProps.required) // number[] | undefined // Should be number[]
+
+    return {
+      HelloWorldProps
+    }
   }
 })
 </script>
